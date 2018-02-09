@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import ru.osk.sd.Counter;
 
 /**
  *
@@ -24,8 +25,29 @@ public class JavaApplication2 {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        try {
+    public static void main(String[] args) throws ParseException {
+        String infoSM = "Оперативное РМ авуавуцфыауца ывсмцус";  
+            
+        if(infoSM.startsWith("Оперативное РМ"))
+            System.err.println("!!!");
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
+        SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
+        //dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date regcreateSM = dateFormat.parse("01-02-2018 11:47:13");
+        Date deadlineSM = dateFormat.parse("06-02-2018 12:49:58");
+        String callerSM = "ОРГ-ЮУР";
+        Calendar clDeadline = Calendar.getInstance();
+        clDeadline.setTimeInMillis(deadlineSM.getTime());
+            
+        Calendar clCreate = Calendar.getInstance();
+        clCreate.setTimeInMillis(regcreateSM.getTime());
+            
+            
+        Counter counter = new Counter(8, 17, 12, 13);
+        long workHours = counter.countWorkHurs(clCreate, clDeadline);
+        System.err.println(df.format(new Date(workHours)));
+        /*try {
             // TODO code application logic here
             String infoSM = "Оперативное РМ авуавуцфыауца ывсмцус";  
             
@@ -165,7 +187,7 @@ public class JavaApplication2 {
             }
         } catch (ParseException ex) {
             Logger.getLogger(JavaApplication2.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
     }
     
     private static long getWorkHours(Calendar regcreateSM, Calendar deadlineSM) {
