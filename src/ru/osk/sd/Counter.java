@@ -5,7 +5,14 @@
  */
 package ru.osk.sd;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -13,10 +20,21 @@ import java.util.Calendar;
  */
 public class Counter {
     
+    private static final long MLS = 1;
+    private static final long SEC = 1000 * MLS;
+    private static final long MIN = 60 * SEC;
+    private static final long HOU = 60 * MIN;
+    private static final long DA  = 24 * HOU;
+    
+    private static final int BEFORE_WORK_HOURS = -1;
+    private static final int AFTER_WORK_HOURS  =  1;
+    private static final int IS_WORK_HOURS     =  0;
+    
     private final int dayStart;
     private final int dayFinish;
     private final int lunchStart;
     private final int lunchFinish;
+    private Set<Weekends> weekends = new HashSet<>(); 
     
     public Counter(int dayStart, int dayFinish, int lunchStart, int lunchFinish){
         if(dayStart < dayFinish && dayStart >= 0 && dayFinish < 24){
@@ -24,40 +42,117 @@ public class Counter {
             this.dayFinish = dayFinish;
             this.lunchStart = lunchStart;
             this.lunchFinish = lunchFinish;
+            this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
         }else{
             throw new IllegalArgumentException("Day start and finish must be between 0 and 24 and start must be less then finish");
         }
     }
     
+    public void setWeekends(Weekends[] ws){
+        this.weekends = new HashSet<>(Arrays.asList(ws));
+    }
+    
     public long countWorkHurs(Calendar start, Calendar finish){
-        Calendar tmStarn = (Calendar) start.clone();
+        long workHours = 0;
+        long unWork = 0;
+        Calendar tmStart = (Calendar) start.clone();
         Calendar tmFinish = (Calendar) finish.clone();
         
-        if(isWorkHours(tmStarn) != 0){
-            
+        switch(isWorkHours(tmStart)){
+            case AFTER_WORK_HOURS:
+                unWork += mlsToStartDay(tmStart, true);
+                tmStart.setTimeInMillis(tmStart.getTimeInMillis() + mlsToStartDay(tmStart, true));
+                break;
+            case BEFORE_WORK_HOURS:
+                unWork += mlsToStartDay(tmStart, false);
+                tmStart.setTimeInMillis(tmStart.getTimeInMillis() + mlsToStartDay(tmStart, false));
+                break;
         }
         
+        switch(isWorkHours(tmFinish)){
+            case AFTER_WORK_HOURS:
+                unWork += mlsToEndDay(tmFinish, false);
+                tmFinish.setTimeInMillis(tmFinish.getTimeInMillis() - mlsToEndDay(tmFinish, false));
+                break;
+            case BEFORE_WORK_HOURS:
+                unWork += mlsToEndDay(tmFinish, true);
+                tmFinish.setTimeInMillis(tmFinish.getTimeInMillis() - mlsToEndDay(tmFinish, true));
+                break;
+        }
         
-        return 0;
+        while(!isWorkDay(tmStart)){
+            tmStart.add(Calendar.DATE, 1);
+            unWork += DA;
+            if(tmStart.after(tmFinish))
+                return workHours;
+        }
         
+        while(!isWorkDay(tmFinish)){
+            tmFinish.add(Calendar.DATE, -1);
+            unWork += DA;
+            if(tmFinish.before(tmStart))
+                return workHours;
+        }
         
+        if(tmFinish.before(tmStart))
+            return workHours;
+        
+        while(tmFinish.getTimeInMillis() - tmStart.getTimeInMillis() >= DA){
+            if(!isWorkDay(tmStart)){
+                unWork += mlsToStartDay(tmStart, true);
+            } else{
+                workHours += ((dayFinish - dayStart) - (lunchFinish - lunchStart)) * HOU;
+                unWork += DA - (((dayFinish - dayStart) - (lunchFinish - lunchStart)) * HOU) ;
+            }
+            tmStart.add(Calendar.DATE, 1);
+        }
+        
+        if(tmFinish.getTimeInMillis() - tmStart.getTimeInMillis() <=  0 - mlsToEndDay(tmStart, false)){
+            workHours += tmFinish.getTimeInMillis() - tmStart.getTimeInMillis();
+            if((isBeforeLunch(tmStart) && !isBeforeLunch(tmFinish)) || (!isBeforeLunch(tmStart) && isBeforeLunch(tmFinish))){
+                workHours -= (lunchFinish - lunchStart) * HOU;
+                unWork += (lunchFinish - lunchStart) * HOU;
+            }
+        } else{
+            workHours += 0 - mlsToEndDay(tmStart, false);
+            unWork += mlsToStartDay(tmStart, true) + mlsToEndDay(tmStart, false);
+            if(isBeforeLunch(tmStart)){
+                workHours -= (lunchFinish - lunchStart) * HOU;
+            }else{
+                //unWork -= (lunchFinish - lunchStart) * HOU;
+            }
+            tmStart.setTimeInMillis(tmStart.getTimeInMillis() + mlsToStartDay(tmStart, true));
+            
+            workHours += tmFinish.getTimeInMillis() - tmStart.getTimeInMillis();
+            if(!(isBeforeLunch(tmStart) && isBeforeLunch(tmFinish)) || (!isBeforeLunch(tmStart) && !isBeforeLunch(tmFinish))){
+                workHours -= (lunchFinish - lunchStart) * HOU;
+                unWork += (lunchFinish - lunchStart) * HOU;
+            }
+        }
+        
+        return workHours;
     }
     
     private boolean isWorkDay(Calendar cl){
-        return !(cl.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-                cl.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY);
+        for(Weekends w : weekends){
+            if(cl.get(Calendar.DAY_OF_WEEK) == w.getValue()){
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     private int isWorkHours(Calendar cl){
         if(cl.get(Calendar.HOUR_OF_DAY) > dayFinish || 
                 (cl.get(Calendar.HOUR_OF_DAY) == dayFinish && cl.get(Calendar.MINUTE) > 0 )){
-            return 1;
+            return AFTER_WORK_HOURS;
         }
         if(cl.get(Calendar.HOUR_OF_DAY) < dayStart){
-            return -1;
+            return BEFORE_WORK_HOURS;
         }
         
-        return 0;
+        return IS_WORK_HOURS;
     }
     
     private long mlsToStartDay(Calendar cl, boolean isAfter){
@@ -73,7 +168,7 @@ public class Counter {
         if(isAfter)
             return clDayStart.getTimeInMillis() - cl.getTimeInMillis();
         else
-            return cl.getTimeInMillis() - clDayStart.getTimeInMillis();
+            return clDayStart.getTimeInMillis() - cl.getTimeInMillis();
     }
     
     private long mlsToEndDay(Calendar date, boolean isBefore){
