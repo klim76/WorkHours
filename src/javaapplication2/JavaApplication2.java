@@ -34,8 +34,8 @@ public class JavaApplication2 {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
         SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
         //dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date regcreateSM = dateFormat.parse("01-02-2018 11:47:13");
-        Date deadlineSM = dateFormat.parse("06-02-2018 12:49:58");
+        Date regcreateSM = dateFormat.parse("05-02-2018 11:47:13");
+        Date deadlineSM = dateFormat.parse("07-02-2018 10:49:58");
         String callerSM = "ОРГ-ЮУР";
         Calendar clDeadline = Calendar.getInstance();
         clDeadline.setTimeInMillis(deadlineSM.getTime());
@@ -47,6 +47,9 @@ public class JavaApplication2 {
         Counter counter = new Counter(8, 17, 12, 13);
         long workHours = counter.countWorkHurs(clCreate, clDeadline);
         System.err.println(df.format(new Date(workHours)));
+        long ndl = (long) (workHours * 0.2);
+        System.err.println(df.format(new Date(counter.getNewDeadLine(clDeadline, ndl).getTimeInMillis())));
+        
         /*try {
             // TODO code application logic here
             String infoSM = "Оперативное РМ авуавуцфыауца ывсмцус";  
