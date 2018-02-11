@@ -151,7 +151,7 @@ public class Counter {
                         if(!isBeforeLunch(newDeadLine)){
                             timeToDayStart = mlsToStartDay(newDeadLine, false) - ((lunchFinish - lunchStart) * HOU); //+1;
                             if(workHours > timeToDayStart)
-                                newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() + mlsToEndDay(newDeadLine, true));
+                                newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
                             else
                                 if(workHours > (dayFinish - lunchFinish) * HOU){
                                     newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - (workHours + ((lunchFinish - lunchStart) * HOU)));

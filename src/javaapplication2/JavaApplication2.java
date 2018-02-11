@@ -13,6 +13,7 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import ru.osk.sd.Counter;
+import ru.osk.sd.Weekends;
 
 /**
  *
@@ -34,8 +35,8 @@ public class JavaApplication2 {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
         SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
         //dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date regcreateSM = dateFormat.parse("05-02-2018 11:47:13");
-        Date deadlineSM = dateFormat.parse("07-02-2018 10:49:58");
+        Date regcreateSM = dateFormat.parse("08-02-2018 16:47:13");
+        Date deadlineSM = dateFormat.parse("14-02-2018 09:49:58");
         String callerSM = "ОРГ-ЮУР";
         Calendar clDeadline = Calendar.getInstance();
         clDeadline.setTimeInMillis(deadlineSM.getTime());
@@ -44,7 +45,8 @@ public class JavaApplication2 {
         clCreate.setTimeInMillis(regcreateSM.getTime());
             
             
-        Counter counter = new Counter(8, 17, 12, 13);
+        Counter counter = new Counter(8, 20, 0, 0);
+        counter.setWeekends(new Weekends []{});
         long workHours = counter.countWorkHurs(clCreate, clDeadline);
         System.err.println(df.format(new Date(workHours)));
         long ndl = (long) (workHours * 0.2);
