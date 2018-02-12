@@ -6,13 +6,9 @@
 package ru.osk.sd;
 
 import static java.lang.Math.abs;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -231,7 +227,8 @@ public class Counter {
     }
 
     private boolean isBeforeLunch(Calendar cl) {
-        return cl.get(Calendar.HOUR_OF_DAY) < lunchStart;
+        return ((cl.get(Calendar.HOUR_OF_DAY) < lunchStart) ||
+                (cl.get(Calendar.HOUR_OF_DAY) == lunchStart && cl.get(Calendar.MINUTE) == 0));
     }
     
 }
