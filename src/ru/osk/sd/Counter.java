@@ -84,7 +84,7 @@ public class Counter {
                 break;
             case IS_LUNCH_HOURS:
                 unWork += skipLunch(tmFinish, false);
-                tmFinish.setTimeInMillis(tmFinish.getTimeInMillis() + skipLunch(tmFinish, false));
+                tmFinish.setTimeInMillis(tmFinish.getTimeInMillis() - skipLunch(tmFinish, false));
                 break;
         }
         
