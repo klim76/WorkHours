@@ -37,7 +37,7 @@ public class Counter {
     private Set<Weekends> weekends = new HashSet<>(); 
     
     public Counter(int dayStart, int dayFinish, int lunchStart, int lunchFinish){
-        if(dayStart < dayFinish && dayStart >= 0 && dayFinish < 24){
+        if(dayStart < dayFinish && dayStart >= 0 && dayFinish <= 24){
             this.dayStart = dayStart;        
             this.dayFinish = dayFinish;
             this.lunchStart = lunchStart;
@@ -171,6 +171,8 @@ public class Counter {
                                 }
                         }else{
                             timeToDayStart = mlsToStartDay(newDeadLine, false);
+                            if(timeToDayStart == 0)
+                                timeToDayStart = mlsToStartDay(newDeadLine, true);
                             if(workHours > timeToDayStart)
                                 newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
                             else
