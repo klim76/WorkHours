@@ -6,9 +6,11 @@
 package ru.osk.sd;
 
 import static java.lang.Math.abs;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,6 +37,7 @@ public class Counter {
     private final int lunchStart;
     private final int lunchFinish;
     private Set<Weekends> weekends = new HashSet<>(); 
+    private List<Holiday> holidays = new ArrayList<>();
     
     public Counter(int dayStart, int dayFinish, int lunchStart, int lunchFinish){
         if(dayStart < dayFinish && dayStart >= 0 && dayFinish <= 24){
@@ -43,6 +46,7 @@ public class Counter {
             this.lunchStart = lunchStart;
             this.lunchFinish = lunchFinish;
             this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
+            this.setHolidays(new Holiday[]{new Holiday(23,2,2018), new Holiday(8,3,2018), new Holiday(9,3,2018)});
         }else{
             throw new IllegalArgumentException("Day start and finish must be between 0 and 24 and start must be less then finish");
         }
@@ -50,6 +54,10 @@ public class Counter {
     
     public void setWeekends(Weekends[] ws){
         this.weekends = new HashSet<>(Arrays.asList(ws));
+    }
+    
+    public void setHolidays(Holiday[] hs){
+        this.holidays = new ArrayList<>(Arrays.asList(hs));
     }
     
     public long countWorkHurs(Calendar start, Calendar finish){
@@ -193,6 +201,14 @@ public class Counter {
     private boolean isWorkDay(Calendar cl){
         for(Weekends w : weekends){
             if(cl.get(Calendar.DAY_OF_WEEK) == w.getValue()){
+                return false;
+            }
+        }
+        
+        for(Holiday h : holidays){
+            if(cl.get(Calendar.DAY_OF_MONTH) == h.getDay() &&
+                    cl.get(Calendar.MONTH) == h.getMonth()&&
+                    cl.get(Calendar.YEAR) == h.getYear()){
                 return false;
             }
         }

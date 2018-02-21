@@ -10,10 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import ru.osk.sd.Counter;
-import ru.osk.sd.Weekends;
 
 /**
  *
@@ -35,18 +32,55 @@ public class JavaApplication2 {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
         SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
         //dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date regcreateSM = dateFormat.parse("15-02-2018 00:00:00");
-        Date deadlineSM = dateFormat.parse("16-02-2018 01:00:00");
-        String callerSM = "ОРГ-ЮУР";
+        Date regcreateSM = dateFormat.parse("19-02-2018 14:42:53");
+        Date deadlineSM = dateFormat.parse("22-02-2018 09:40:46");
+        String callerSM = "ДВС";
         Calendar clDeadline = Calendar.getInstance();
         clDeadline.setTimeInMillis(deadlineSM.getTime());
             
         Calendar clCreate = Calendar.getInstance();
         clCreate.setTimeInMillis(regcreateSM.getTime());
+        
+        switch(callerSM){
+            case "КЛГ":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Europe/Kaliningrad"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Europe/Kaliningrad"));
+                break;
+            case "ПРИВ":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Europe/Samara"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Europe/Samara"));
+                break;
+            case "ЮУР":case "СВРД":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Yekaterinburg"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Yekaterinburg"));
+                break;
+            case "ЗСИБ":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Omsk"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Omsk"));
+                break;
+            case "КРАСН":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Krasnoyarsk"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Krasnoyarsk"));
+                break;
+            case "ВСИБ":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Irkutsk"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Irkutsk"));
+                break;
+            case "ЗАБ":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Yakutsk"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Yakutsk"));
+                break;
+            case "ДВС":
+                clCreate.setTimeZone(TimeZone.getTimeZone("Asia/Vladivostok"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Asia/Vladivostok"));
+                break;    
+            default:
+                clCreate.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+                clDeadline.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
+        }
             
-            
-        Counter counter = new Counter(0, 24, 0, 0);
-        counter.setWeekends(new Weekends []{});
+        Counter counter = new Counter(8, 17, 12, 13);
+        //counter.setWeekends(new Weekends []{});
         long workHours = counter.countWorkHurs(clCreate, clDeadline);
         int ho = (int) (workHours / (60*60*1000));
         int mi = (int) ((workHours - (60*60*1000*ho)) / (60*1000));
