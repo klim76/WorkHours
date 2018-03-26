@@ -117,10 +117,14 @@ public class Counter {
             if(!isWorkDay(tmStart)){
                 unWork += mlsToStartDay(tmStart, true);
             } else{
-                workHours += ((dayFinish - dayStart) - (lunchFinish - lunchStart)) * HOU;
-                unWork += DA - (((dayFinish - dayStart) - (lunchFinish - lunchStart)) * HOU) ;
+                workHours += mlsToEndDay(tmStart, false);
+                unWork += mlsToStartDay(tmStart, true) - mlsToEndDay(tmStart, false);
+                if(isBeforeLunch(tmStart)){
+                    workHours -= (lunchFinish - lunchStart) * HOU;
+                    unWork += (lunchFinish - lunchStart) * HOU;
+                }
             }
-            tmStart.add(Calendar.DATE, 1);
+            tmStart.setTimeInMillis(tmStart.getTimeInMillis() + mlsToStartDay(tmStart, true));
         }
         
         if(tmFinish.getTimeInMillis() - tmStart.getTimeInMillis() <=  mlsToEndDay(tmStart, false)){
@@ -187,8 +191,14 @@ public class Counter {
                                 newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - workHours);
                         }
                     }else{
-                        newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
-                        timeToDayStart = 0;
+                        //newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
+                        timeToDayStart = mlsToStartDay(newDeadLine, false);
+                        if(timeToDayStart == 0)
+                            timeToDayStart = mlsToStartDay(newDeadLine, true);
+                        if(workHours > timeToDayStart)
+                            newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
+                        else
+                            newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - workHours);
                     }
                     break;
             }
