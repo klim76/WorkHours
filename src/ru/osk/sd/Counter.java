@@ -39,6 +39,13 @@ public class Counter {
     private Set<Weekends> weekends = new HashSet<>(); 
     private List<Holiday> holidays = new ArrayList<>();
     
+    /**
+     *
+     * @param dayStart start of work day
+     * @param dayFinish finish of work day
+     * @param lunchStart start of lunch break(for the schedule without lunch break set 0)
+     * @param lunchFinish finish of lunch break(for the schedule without lunch break set 0)
+     */
     public Counter(int dayStart, int dayFinish, int lunchStart, int lunchFinish){
         if(dayStart < dayFinish && dayStart >= 0 && dayFinish <= 24){
             this.dayStart = dayStart;        
@@ -52,14 +59,28 @@ public class Counter {
         }
     }
     
+    /**
+     *
+     * @param ws list of weekends to skip while calculate workhours
+     */
     public void setWeekends(Weekends[] ws){
         this.weekends = new HashSet<>(Arrays.asList(ws));
     }
     
+    /**
+     *
+     * @param hs list of holidays to skip while calculate workhours
+     */
     public void setHolidays(Holiday[] hs){
         this.holidays = new ArrayList<>(Arrays.asList(hs));
     }
     
+    /**
+     *
+     * @param start 
+     * @param finish
+     * @return workhours in mls between start and finish
+     */
     public long countWorkHurs(Calendar start, Calendar finish){
         long workHours = 0;
         long unWork = 0;
@@ -152,6 +173,12 @@ public class Counter {
         return workHours;
     }
     
+    /**
+     *
+     * @param deadLine old deadline to be reduced
+     * @param workHours Working hours(in mls) for which you need to shift the deadline
+     * @return new deadline shifted by workhours
+     */
     public Calendar getNewDeadLine(Calendar deadLine, long workHours){
         long timeToDayStart = 0;
         Calendar newDeadLine = (Calendar) deadLine.clone();
@@ -175,8 +202,8 @@ public class Counter {
                     newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - skipLunch(newDeadLine, false));
                     break;
                 case IS_WORK_HOURS:
-                    if(isWorkDay(newDeadLine)){
-                        if(!isBeforeLunch(newDeadLine)){
+                    if(isWorkDay(newDeadLine)){ // если рабочий день
+                        if(!isBeforeLunch(newDeadLine)){  // если после обеда
                             timeToDayStart = mlsToStartDay(newDeadLine, false) - ((lunchFinish - lunchStart) * HOU); //+1;
                             if(workHours > timeToDayStart)
                                 newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
@@ -186,24 +213,18 @@ public class Counter {
                                 }else{
                                     newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - workHours);
                                 }
-                        }else{
+                        }else{  //если до обеда
                             timeToDayStart = mlsToStartDay(newDeadLine, false);
                             if(timeToDayStart == 0)
                                 timeToDayStart = mlsToStartDay(newDeadLine, true);
-                            if(workHours > timeToDayStart)
+                            if(workHours > timeToDayStart)  // если рабочих часов больше чем до начала дня вычитаем часы до начала дня, дедлайн переводин на конец предыдущего дня
                                 newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
-                            else
+                            else // если рабочих часов меньше чем часов до начала дня - дедлайн двигаем на кочичество рабочих 
                                 newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - workHours);
                         }
-                    }else{
-                        //newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
-                        timeToDayStart = mlsToStartDay(newDeadLine, false);
-                        if(timeToDayStart == 0)
-                            timeToDayStart = mlsToStartDay(newDeadLine, true);
-                        if(workHours > timeToDayStart)
-                            newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
-                        else
-                            newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - workHours);
+                    }else{ // если выходной
+                        timeToDayStart = 0;
+                        newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true)); 
                     }
                     break;
             }
@@ -251,6 +272,12 @@ public class Counter {
                 (cl.get(Calendar.HOUR_OF_DAY) == lunchStart && cl.get(Calendar.MINUTE) == 0));
     }
     
+    /**
+     *
+     * @param date 
+     * @param forvard skip direction flag. true - to return time to end of break. false - to return time to start break
+     * @return mls to the begining of the selected working day
+     */
     private long mlsToStartDay(Calendar cl, boolean isAfter){
         Calendar clDayStart = (Calendar) cl.clone();
         if(isAfter){
@@ -267,6 +294,12 @@ public class Counter {
             return abs(clDayStart.getTimeInMillis() - cl.getTimeInMillis());
     }
     
+    /**
+     *
+     * @param date 
+     * @param isBefore if false - means the calculation for the current day, otherwise before the previous day
+     * @return mls to the end of the selected working day
+     */
     private long mlsToEndDay(Calendar date, boolean isBefore){
         Calendar clDayEnd = (Calendar) date.clone();
         if(isBefore)
@@ -282,6 +315,12 @@ public class Counter {
             return abs(date.getTimeInMillis() - clDayEnd.getTimeInMillis());
     }
     
+    /**
+     *
+     * @param date 
+     * @param forvard skip direction flag. true - to return time to end of break. false - to return time to start break
+     * @return mls to skip lunch break
+     */
     private long skipLunch(Calendar date, boolean forvard){
         Calendar clLunch = (Calendar) date.clone();
         if(forvard){
@@ -295,9 +334,4 @@ public class Counter {
         
         return abs(date.getTimeInMillis() - clLunch.getTimeInMillis());
     }
-
-    
-    
-    
-    
 }
