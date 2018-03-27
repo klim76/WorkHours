@@ -46,7 +46,7 @@ public class Counter {
             this.lunchStart = lunchStart;
             this.lunchFinish = lunchFinish;
             this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
-            this.setHolidays(new Holiday[]{new Holiday(23,2,2018), new Holiday(8,3,2018), new Holiday(9,3,2018)});
+            //this.setHolidays(new Holiday[]{new Holiday(23,2,2018), new Holiday(8,3,2018), new Holiday(9,3,2018)});
         }else{
             throw new IllegalArgumentException("Day start and finish must be between 0 and 24 and start must be less then finish");
         }
@@ -97,15 +97,15 @@ public class Counter {
         }
         
         while(!isWorkDay(tmStart)){
-            tmStart.add(Calendar.DATE, 1);
-            unWork += DA;
+            unWork += mlsToStartDay(tmStart, true);
+            tmStart.setTimeInMillis(tmStart.getTimeInMillis() + mlsToStartDay(tmStart, true));
             if(tmStart.after(tmFinish))
                 return workHours;
         }
         
         while(!isWorkDay(tmFinish)){
-            tmFinish.add(Calendar.DATE, -1);
-            unWork += DA;
+            unWork += mlsToEndDay(tmFinish, true);
+            tmFinish.setTimeInMillis(tmFinish.getTimeInMillis() - mlsToEndDay(tmFinish, true));
             if(tmFinish.before(tmStart))
                 return workHours;
         }
@@ -155,6 +155,11 @@ public class Counter {
     public Calendar getNewDeadLine(Calendar deadLine, long workHours){
         long timeToDayStart = 0;
         Calendar newDeadLine = (Calendar) deadLine.clone();
+        while(!isWorkDay(newDeadLine)){
+            newDeadLine.setTimeInMillis(newDeadLine.getTimeInMillis() - mlsToEndDay(newDeadLine, true));
+            if(deadLine.getTimeInMillis() - newDeadLine.getTimeInMillis() > 7 * DA)
+                return deadLine;
+        }
         while(workHours > 0){
             switch(isWorkHours(newDeadLine)){
                 case BEFORE_WORK_HOURS: // если до начала рабочего дня вычитаем дедлайн до 17-00 предыдущего дня
