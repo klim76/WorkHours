@@ -33,8 +33,8 @@ public class JavaApplication2 {
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
         SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
         //dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date regcreateSM = dateFormat.parse("27-03-2018 12:46:24");
-        Date deadlineSM = dateFormat.parse("09-04-2018 12:00:00");
+        Date regcreateSM = dateFormat.parse("25-04-2018 13:01:24");
+        Date deadlineSM = dateFormat.parse("03-05-2018 12:00:00");
         String callerSM = "МСК";
         Calendar clDeadline = Calendar.getInstance();
         clDeadline.setTimeInMillis(deadlineSM.getTime());

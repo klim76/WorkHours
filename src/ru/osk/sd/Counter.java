@@ -38,6 +38,8 @@ public class Counter {
     private final int lunchFinish;
     private Set<Weekends> weekends = new HashSet<>(); 
     private List<Holiday> holidays = new ArrayList<>();
+    private List<ForceWorkday> forceWorkdays = new ArrayList<>();
+           
     
     /**
      *
@@ -53,7 +55,8 @@ public class Counter {
             this.lunchStart = lunchStart;
             this.lunchFinish = lunchFinish;
             this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
-            //this.setHolidays(new Holiday[]{new Holiday(23,2,2018), new Holiday(8,3,2018), new Holiday(9,3,2018)});
+            this.setHolidays(new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)});
+            this.setWorkdays(new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
         }else{
             throw new IllegalArgumentException("Day start and finish must be between 0 and 24 and start must be less then finish");
         }
@@ -73,6 +76,14 @@ public class Counter {
      */
     public void setHolidays(Holiday[] hs){
         this.holidays = new ArrayList<>(Arrays.asList(hs));
+    }
+    
+    /**
+     *
+     * @param fwd list of holidays/weekends wich was workdays
+     */
+    public void setWorkdays(ForceWorkday[] fwd){
+        this.forceWorkdays = new ArrayList<>(Arrays.asList(fwd));
     }
     
     /**
@@ -235,6 +246,15 @@ public class Counter {
     }
     
     private boolean isWorkDay(Calendar cl){
+        
+        for(ForceWorkday fwd : forceWorkdays){
+            if(cl.get(Calendar.DAY_OF_MONTH) == fwd.getDay() &&
+                    cl.get(Calendar.MONTH) == fwd.getMonth()&&
+                    cl.get(Calendar.YEAR) == fwd.getYear()){
+                return true;
+            }
+        }
+        
         for(Weekends w : weekends){
             if(cl.get(Calendar.DAY_OF_WEEK) == w.getValue()){
                 return false;
