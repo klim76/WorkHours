@@ -36,9 +36,9 @@ public class Counter {
     private final int dayFinish;
     private final int lunchStart;
     private final int lunchFinish;
-    private Set<Weekends> weekends = new HashSet<>(); 
-    private List<Holiday> holidays = new ArrayList<>();
-    private List<ForceWorkday> forceWorkdays = new ArrayList<>();
+    private Set<Weekends> weekends = new HashSet<>(0); 
+    private List<Holiday> holidays = new ArrayList<>(0);
+    private List<ForceWorkday> forceWorkdays = new ArrayList<>(0);
            
     
     /**
@@ -54,12 +54,19 @@ public class Counter {
             this.dayFinish = dayFinish;
             this.lunchStart = lunchStart;
             this.lunchFinish = lunchFinish;
-            this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
-            this.setHolidays(new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)});
-            this.setWorkdays(new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
+            //this.setWeekends(new Weekends[]{Weekends.SUNDAY, Weekends.SATURDAY});
+            //this.setHolidays(new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)});
+            //this.setWorkdays(new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
         }else{
             throw new IllegalArgumentException("Day start and finish must be between 0 and 24 and start must be less then finish");
         }
+    }
+    
+    public Counter(int dayStart, int dayFinish, int lunchStart, int lunchFinish, Weekends[] wk, Holiday[] hl, ForceWorkday[] fwd){
+        this(dayStart, dayFinish, lunchStart, lunchFinish);
+        this.setWeekends(wk);
+        this.setHolidays(hl);
+        this.setWorkdays(fwd);
     }
     
     /**

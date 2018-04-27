@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import ru.osk.sd.Counter;
+import ru.osk.sd.ForceWorkday;
+import ru.osk.sd.Holiday;
 import ru.osk.sd.Weekends;
 
 /**
@@ -80,7 +82,9 @@ public class JavaApplication2 {
                 clDeadline.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
         }
             
-        Counter counter = new Counter(8, 17, 12, 13);
+        Counter counter = new Counter(8, 17, 12, 13, new Weekends[]{Weekends.SATURDAY, Weekends.SUNDAY}, 
+                new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)}, 
+                new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
         //counter.setWeekends(new Weekends []{});
         long workHours = counter.countWorkHurs(clCreate, clDeadline);
         int ho = (int) (workHours / (60*60*1000));
