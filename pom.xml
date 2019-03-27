@@ -5,7 +5,7 @@
 
     <groupId>ru.osk.sd</groupId>
     <artifactId>WorkHours</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <parent>
