@@ -254,52 +254,52 @@ public class Counter {
     
     /**
      * Add working hours to calendar date
-     * @param deadLine date to which time is added
+     * @param startDate date to which time is added
      * @param workHours Working hours(in mls) for which you need to shift the deadline
      * @return new deadline shifted by workhours
      */
-    public Calendar addWokrHours(Calendar deadLine, long workHours) {
-        Calendar tmpDeadLine = (Calendar) deadLine.clone();
-        while (workHours > 0 || !isWorkDay(tmpDeadLine)) {
-            if (!isWorkDay(tmpDeadLine)) {
-                tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+    public Calendar addWokrHours(Calendar startDate, long workHours) {
+        Calendar localDate = (Calendar) startDate.clone();
+        while (workHours > 0 || !isWorkDay(localDate)) {
+            if (!isWorkDay(localDate)) {
+                localDate.add(Calendar.MILLISECOND, (int) mlsToStartDay(localDate, true));
                 continue;
             }
-            switch (isWorkHours(tmpDeadLine)) {
+            switch (isWorkHours(localDate)) {
                 case BEFORE_WORK_HOURS:
-                    tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, false));
+                    localDate.add(Calendar.MILLISECOND, (int) mlsToStartDay(localDate, false));
                     break;
                 case AFTER_WORK_HOURS:
-                    tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+                    localDate.add(Calendar.MILLISECOND, (int) mlsToStartDay(localDate, true));
                     break;
                 case IS_LUNCH_HOURS:
-                    tmpDeadLine.add(Calendar.MILLISECOND, (int) skipLunch(tmpDeadLine, true));
+                    localDate.add(Calendar.MILLISECOND, (int) skipLunch(localDate, true));
                     break;
                 case IS_WORK_HOURS:
                     long currentHours = workHours;
-                    currentHours -= mlsToEndDay(tmpDeadLine, false);
-                    if (isBeforeLunch(tmpDeadLine)) {
+                    currentHours -= mlsToEndDay(localDate, false);
+                    if (isBeforeLunch(localDate)) {
                         currentHours += (lunchFinish - lunchStart) * 60 * 60 * 1000;
                     }
                     if (currentHours >= 0) {
                         workHours = currentHours;
-                        tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+                        localDate.add(Calendar.MILLISECOND, (int) mlsToStartDay(localDate, true));
                     } else {
                         boolean addLunch = false;
-                        if (isBeforeLunch(tmpDeadLine)) {
+                        if (isBeforeLunch(localDate)) {
                             addLunch = true;
                         }
-                        tmpDeadLine.add(Calendar.MILLISECOND, (int) workHours);
+                        localDate.add(Calendar.MILLISECOND, (int) workHours);
                         // add lunchtime to deadline
-                        if (!isBeforeLunch(tmpDeadLine) && addLunch) {
-                            tmpDeadLine.add(Calendar.HOUR_OF_DAY, lunchFinish - lunchStart);
+                        if (!isBeforeLunch(localDate) && addLunch) {
+                            localDate.add(Calendar.HOUR_OF_DAY, lunchFinish - lunchStart);
                         }
                         workHours = 0;
                     }
                     break;
             }
         }
-        return tmpDeadLine;
+        return localDate;
     }
     
     private boolean isWorkDay(Calendar cl){
