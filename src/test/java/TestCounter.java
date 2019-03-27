@@ -97,27 +97,40 @@ public class TestCounter {
     }
     
     @Test
-    public void testGetNewDeadLine() throws ParseException {   
+    public void testAddWorkHours() throws ParseException {   
         SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
         SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
-        Date regcreateSM = dateFormat.parse("27-03-2019 13:01:24");
-        Date workday = dateFormat.parse("28-03-2019 12:30:00");
-        Date beforeWeekend = dateFormat.parse("29-03-2019 12:30:00");
         
         Counter counter = new Counter(8, 17, 12, 13, new Weekends[]{Weekends.SATURDAY, Weekends.SUNDAY}, 
-                new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)}, 
+                new Holiday[]{new Holiday(1,5,2019), new Holiday(2,5,2019), new Holiday(3,5,2019), new Holiday(9,5,2019), new Holiday(10,5,2019)}, 
                 new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
-        Calendar created = Calendar.getInstance();
-        created.setTimeInMillis(regcreateSM.getTime());
+        
         Calendar deadline = Calendar.getInstance();
+        long workHours = 0;
         
+        Date beforeLunch = dateFormat.parse("28-03-2019 08:30:00");
+        deadline.setTimeInMillis(beforeLunch.getTime());
+        workHours = Counter.HOU * 4;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "28-03-2019 13:30:00 MSK");
+        workHours = Counter.HOU * 3;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "28-03-2019 11:30:00 MSK");
+        workHours = Counter.HOU * 8;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "29-03-2019 08:30:00 MSK");
         
-        deadline.setTimeInMillis(workday.getTime());
-        long workHours = Counter.HOU * 4;
+        Date afterLunch = dateFormat.parse("28-03-2019 12:30:00");
+        deadline.setTimeInMillis(afterLunch.getTime());
+        workHours = Counter.HOU * 4;
         System.out.println(longToStringDate(workHours));
         System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
         Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "29-03-2019 08:00:00 MSK");
         
+        Date beforeWeekend = dateFormat.parse("29-03-2019 12:30:00");
         workHours = Counter.HOU * 4 + Counter.MIN * 30;
         System.out.println(longToStringDate(workHours));
         System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
@@ -129,6 +142,12 @@ public class TestCounter {
         System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
         Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "01-04-2019 08:30:00 MSK");
         
+        Date beforeHolidays = dateFormat.parse("30-04-2019 12:30:00");
+        deadline.setTimeInMillis(beforeHolidays.getTime());
+        workHours = Counter.HOU * 4 + 30 * Counter.MIN;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "06-05-2019 08:30:00 MSK");
     }
     
     /**
