@@ -4,8 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.util.Assert;
 import ru.osk.sd.Counter;
 import ru.osk.sd.ForceWorkday;
 import ru.osk.sd.Holiday;
@@ -80,7 +80,7 @@ public class TestCounter {
                 clCreate.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
                 clDeadline.setTimeZone(TimeZone.getTimeZone("Europe/Moscow"));
         }
-            
+        
         Counter counter = new Counter(8, 17, 12, 13, new Weekends[]{Weekends.SATURDAY, Weekends.SUNDAY}, 
                 new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)}, 
                 new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
@@ -89,10 +89,67 @@ public class TestCounter {
         int ho = (int) (workHours / (60*60*1000));
         int mi = (int) ((workHours - (60*60*1000*ho)) / (60*1000));
         int se = (int) ((workHours - (60*60*1000*ho) - (60*1000*mi)) / 1000);
-        System.err.println(String.format("ч: %d м: %d с: %d", ho, mi, se));
+        System.out.println(String.format("ч: %d м: %d с: %d", ho, mi, se));
         org.junit.Assert.assertEquals(String.format("ч: %d м: %d с: %d", ho, mi, se), "ч: 31 м: 58 с: 36");
         long ndl = (long) (workHours * 0.3);
-        System.err.println(df.format(new Date(counter.getNewDeadLine(clDeadline, ndl).getTimeInMillis())));
+        System.out.println(df.format(new Date(counter.getNewDeadLine(clDeadline, ndl).getTimeInMillis())));
         org.junit.Assert.assertEquals(df.format(new Date(counter.getNewDeadLine(clDeadline, ndl).getTimeInMillis())), "28-04-2018 10:24:25 MSK");
+    }
+    
+    @Test
+    public void testGetNewDeadLine() throws ParseException {   
+        SimpleDateFormat dateFormat = new SimpleDateFormat(DATE);
+        SimpleDateFormat df = new SimpleDateFormat(DATE_OUT);
+        Date regcreateSM = dateFormat.parse("27-03-2019 13:01:24");
+        Date workday = dateFormat.parse("28-03-2019 12:30:00");
+        Date beforeWeekend = dateFormat.parse("29-03-2019 12:30:00");
+        
+        Counter counter = new Counter(8, 17, 12, 13, new Weekends[]{Weekends.SATURDAY, Weekends.SUNDAY}, 
+                new Holiday[]{new Holiday(30,4,2018), new Holiday(1,5,2018), new Holiday(2,5,2018), new Holiday(9,5,2018)}, 
+                new ForceWorkday[]{new ForceWorkday(28, 4, 2018), new ForceWorkday(9, 6, 2018)});
+        Calendar created = Calendar.getInstance();
+        created.setTimeInMillis(regcreateSM.getTime());
+        Calendar deadline = Calendar.getInstance();
+        
+        
+        deadline.setTimeInMillis(workday.getTime());
+        long workHours = Counter.HOU * 4;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "29-03-2019 08:00:00 MSK");
+        
+        workHours = Counter.HOU * 4 + Counter.MIN * 30;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "29-03-2019 08:30:00 MSK");
+        
+        deadline.setTimeInMillis(beforeWeekend.getTime());
+        workHours = Counter.HOU * 4 + 30 * Counter.MIN;
+        System.out.println(longToStringDate(workHours));
+        System.out.println(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())));
+        Assert.assertEquals(df.format(new Date(counter.addWokrHours(deadline, workHours).getTimeInMillis())), "01-04-2019 08:30:00 MSK");
+        
+    }
+    
+    /**
+     * Formating long datetime value to string
+     * @param time
+     * @return 
+     */
+    private String longToStringDate(long time) {
+        return longToStringDate(time, "ч: %d м: %d с: %d");
+    }
+    
+    /**
+     * Formating long datetime value to string
+     * @param time
+     * @param format
+     * @return 
+     */
+    private String longToStringDate(long time, String format) {
+        int ho = (int) (time / (60*60*1000));
+        int mi = (int) ((time - (60*60*1000*ho)) / (60*1000));
+        int se = (int) ((time - (60*60*1000*ho) - (60*1000*mi)) / 1000);
+        return String.format(format, ho, mi, se);
     }
 }

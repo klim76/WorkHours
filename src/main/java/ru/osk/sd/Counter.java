@@ -19,11 +19,11 @@ import java.util.Set;
  */
 public class Counter {
     
-    private static final long MLS = 1;
-    private static final long SEC = 1000 * MLS;
-    private static final long MIN = 60 * SEC;
-    private static final long HOU = 60 * MIN;
-    private static final long DA  = 24 * HOU;
+    public static final long MLS = 1;
+    public static final long SEC = 1000 * MLS;
+    public static final long MIN = 60 * SEC;
+    public static final long HOU = 60 * MIN;
+    public static final long DA  = 24 * HOU;
     
     private static final int BEFORE_WORK_HOURS  = -1;
     private static final int BEFORE_LUNCH_HOURS = -2;
@@ -192,7 +192,7 @@ public class Counter {
     }
     
     /**
-     *
+     * Remove working hours from calendar date
      * @param deadLine old deadline to be reduced
      * @param workHours Working hours(in mls) for which you need to shift the deadline
      * @return new deadline shifted by workhours
@@ -252,6 +252,56 @@ public class Counter {
         return newDeadLine;
     }
     
+    /**
+     * Add working hours to calendar date
+     * @param deadLine old deadline which to be increased
+     * @param workHours Working hours(in mls) for which you need to shift the deadline
+     * @return new deadline shifted by workhours
+     */
+    public Calendar addWokrHours(Calendar deadLine, long workHours) {
+        Calendar tmpDeadLine = (Calendar) deadLine.clone();
+        while (workHours > 0 || !isWorkDay(tmpDeadLine)) {
+            if (!isWorkDay(tmpDeadLine)) {
+                tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+                continue;
+            }
+            switch (isWorkHours(tmpDeadLine)) {
+                case BEFORE_WORK_HOURS:
+                    tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, false));
+                    break;
+                case AFTER_WORK_HOURS:
+                    tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+                    break;
+                case IS_LUNCH_HOURS:
+                    tmpDeadLine.add(Calendar.MILLISECOND, (int) skipLunch(tmpDeadLine, true));
+                    break;
+                case IS_WORK_HOURS:
+                    long currentHours = workHours;
+                    currentHours -= mlsToEndDay(tmpDeadLine, false);
+                    if (isBeforeLunch(tmpDeadLine)) {
+                        currentHours += (lunchStart - lunchFinish) * 60 * 60 * 1000;
+                    }
+                    if (currentHours >= 0) {
+                        workHours = currentHours;
+                        tmpDeadLine.add(Calendar.MILLISECOND, (int) mlsToStartDay(tmpDeadLine, true));
+                    } else {
+                        boolean addLunch = false;
+                        if (isBeforeLunch(tmpDeadLine)) {
+                            addLunch = true;
+                        }
+                        tmpDeadLine.add(Calendar.MILLISECOND, (int) workHours);
+                        // add lunchtime to deadline
+                        if (!isBeforeLunch(tmpDeadLine) && addLunch) {
+                            tmpDeadLine.add(Calendar.HOUR_OF_DAY, lunchFinish - lunchStart);
+                        }
+                        workHours = 0;
+                    }
+                    break;
+            }
+        }
+        return tmpDeadLine;
+    }
+    
     private boolean isWorkDay(Calendar cl){
         
         for(ForceWorkday fwd : forceWorkdays){
@@ -279,6 +329,11 @@ public class Counter {
         return true;
     }
     
+    /**
+     * Is working hours
+     * @param cl
+     * @return 
+     */
     private int isWorkHours(Calendar cl){
         if(cl.get(Calendar.HOUR_OF_DAY) > dayFinish || 
                 (cl.get(Calendar.HOUR_OF_DAY) == dayFinish && cl.get(Calendar.MINUTE) > 0 )){
@@ -300,9 +355,9 @@ public class Counter {
     }
     
     /**
-     *
+     * Get a count of milliseconds to day start
      * @param date 
-     * @param forvard skip direction flag. true - to return time to end of break. false - to return time to start break
+     * @param isBefore if false - means the calculation for the current day, otherwise for the next day
      * @return mls to the begining of the selected working day
      */
     private long mlsToStartDay(Calendar cl, boolean isAfter){
@@ -322,7 +377,7 @@ public class Counter {
     }
     
     /**
-     *
+     * Get a count of milliseconds to day end
      * @param date 
      * @param isBefore if false - means the calculation for the current day, otherwise before the previous day
      * @return mls to the end of the selected working day
@@ -343,7 +398,7 @@ public class Counter {
     }
     
     /**
-     *
+     * Get a count of milliseconds to lunch start or finish
      * @param date 
      * @param forvard skip direction flag. true - to return time to end of break. false - to return time to start break
      * @return mls to skip lunch break
@@ -360,5 +415,13 @@ public class Counter {
         clLunch.set(Calendar.MILLISECOND, 0);
         
         return abs(date.getTimeInMillis() - clLunch.getTimeInMillis());
+    }
+    
+    /**
+     * Get count milliseconds of working hours
+     * @return 
+     */
+    private long workHoursCount() {
+        return (dayFinish - dayStart) - lunchStart + lunchFinish;
     }
 }
