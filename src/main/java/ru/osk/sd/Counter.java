@@ -254,7 +254,7 @@ public class Counter {
     
     /**
      * Add working hours to calendar date
-     * @param deadLine old deadline which to be increased
+     * @param deadLine date to which time is added
      * @param workHours Working hours(in mls) for which you need to shift the deadline
      * @return new deadline shifted by workhours
      */
@@ -279,7 +279,7 @@ public class Counter {
                     long currentHours = workHours;
                     currentHours -= mlsToEndDay(tmpDeadLine, false);
                     if (isBeforeLunch(tmpDeadLine)) {
-                        currentHours += (lunchStart - lunchFinish) * 60 * 60 * 1000;
+                        currentHours += (lunchFinish - lunchStart) * 60 * 60 * 1000;
                     }
                     if (currentHours >= 0) {
                         workHours = currentHours;
